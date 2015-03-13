@@ -17,6 +17,8 @@ class Manager
 	const RESULT_AT_CURRENT_VERSION = 'RESULT_AT_CURRENT_VERSION';
 	const RESULT_NO_MIGRATIONS_FOUND = 'RESULT_NO_MIGRATIONS_FOUND';
 
+	const CLASS_PREFIX = 'MigrationClass_';
+
 	/**
 	 * The PDO db connection
 	 * 
@@ -119,16 +121,18 @@ class Manager
 			$this->writeln('Creating schema table');
 
 			// means that the schema version table doesn't exist, so create it
-			$createSql = 
-			'
-				CREATE TABLE `' . $schemaVersionTableName . '` ( 
-					version bigint NOT NULL,
-					PRIMARY KEY (`version`)
-				)
-			';
+			$createSql = <<<CREATE_SQL
+CREATE TABLE `$schemaVersionTableName` ( 
+  `migration_id` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
+  `version` bigint NOT NULL,
+  `migration_filename` varchar(255) NOT NULL,
+  `deployed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`migration_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE `$schemaVersionTableName`
+  ADD UNIQUE KEY `version` (`version`);
+CREATE_SQL;
 			$this->pdo->exec($createSql);
-			$insertSql = 'INSERT INTO `' . $schemaVersionTableName . '` (`version`) VALUES (0)';
-			$this->pdo->exec($insertSql);
 		}
 		return $this;
 	}
@@ -149,7 +153,7 @@ class Manager
 			$version = 0;
 		}
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
-		$this->pdo->exec('UPDATE `' . $schemaVersionTableName . '` SET `version` = ' . $version);
+		$this->pdo->exec('DELETE FROM `' . $schemaVersionTableName . '` WHERE `version` > ' . $version);
 		return $this;
 	}
 
@@ -162,7 +166,8 @@ class Manager
 	protected function getPreparedSqlSelectStatementForCurrentVersion()
 	{
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
-		return $this->pdo->prepare('SELECT `version` FROM `' . $schemaVersionTableName . '`');
+		return $this->pdo->prepare(
+            'SELECT `version` FROM `' . $schemaVersionTableName . '` ORDER BY `version` DESC LIMIT 1');
 	}
 	
 	/**
@@ -258,16 +263,16 @@ class Manager
 
 		$d = dir($dir);
 		while (false !== ($entry = $d->read())) {
-			if (preg_match('/^([0-9]+)\-(.*)\.php/i', $entry, $matches)) {
+			if (preg_match('/^([0-9]+).*\.php/i', $entry, $matches)) {
 				$versionNumber = (int) $matches[1];
-				$className = $matches[2];
+				$className = self::CLASS_PREFIX . $versionNumber;
 				if ($versionNumber > $from && $versionNumber <= $to) {
 					$path = $this->_relativePath($this->dir, $dir);
-					$files["v{$matches[1]}"] = array(
-						'path' => $path,
-						'filename' => $entry,
-						'version' => $versionNumber,
-						'classname' => $className);
+					$files[$versionNumber] = array(
+						'path'        => $path,
+						'filename'    => $entry,
+						'version'     => $versionNumber,
+						'classname'   => $className);
 				}
 			} elseif ($entry != '.' && $entry != '..') {
 				$subdir = $dir . '/' . $entry;
@@ -327,11 +332,7 @@ class Manager
 		$class = new $classname($this->pdo, $this->tablePrefix);
 		$class->$direction();
 
-		if ($direction == 'down') {
-			// current version is actually one lower than this version now
-			$version--;
-		}
-		$this->_updateSchemaVersion($version);
+		$this->_updateSchemaVersion($migration, $direction);
 	}
 
 	/**
@@ -339,11 +340,18 @@ class Manager
 	 * 
 	 * @param type $version
 	 */
-	protected function _updateSchemaVersion($version)
+	protected function _updateSchemaVersion($migration, $direction)
 	{
 		$version = (int) $version;
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
-		$sql = 'UPDATE  `' . $schemaVersionTableName . '` SET `version` = ' . $version;
+
+		if ('up' === $direction) { // insert a new row of the migration
+		    $sql = 'INSERT INTO  `' . $schemaVersionTableName . 
+		      '` (`version`, `migration_filename`, `deployed_at`) 
+		          VALUES ("' . $migration['version'] . '", "' . $migration['filename'] . '", NOW())';
+		} else { // remove the row from migration history
+    		$sql = 'DELETE FROM  `' . $schemaVersionTableName . '` WHERE `version` = ' . $migration['version'];
+		}
 		$this->pdo->exec($sql);
 	}
 
