@@ -31,7 +31,7 @@ class Manager
 	 * 
 	 * @var string
 	 */
-	protected $schemaVersionTableName = 'schema_version';
+	protected $schemaVersionTableName = 'tblDatabaseMigration';
 
 	/**
 	 * Directory containing migration files
@@ -179,7 +179,8 @@ CREATE_SQL;
 	{
 		$select = $this->getPreparedSqlSelectStatementForCurrentVersion();
 		$select->execute();
-		return $select->fetchObject()->version;
+		$result = $select->fetchObject();
+		return $result ? $result->version : 0;
 	}
 
 	/**
@@ -342,7 +343,6 @@ CREATE_SQL;
 	 */
 	protected function _updateSchemaVersion($migration, $direction)
 	{
-		$version = (int) $version;
 		$schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
 
 		if ('up' === $direction) { // insert a new row of the migration
