@@ -35,6 +35,11 @@ abstract class AbstractSftw extends Console\Command\Command
 	protected $namespace;
 		
 	protected $errors = array();
+
+	/**
+	 * @var Environment config file path
+	 */
+	private static $envpath = '/etc/helix/rconfig.json';
 	
 	/**
 	 * Construct
@@ -105,15 +110,31 @@ abstract class AbstractSftw extends Console\Command\Command
 	{
 		return $driver . ':dbname=' . $db . ';host=' . $host;
 	}
-	
+
+	protected function _getEnvironmentConfig() {
+	    if (file_exists(self::$envpath) && is_readable(self::$envpath)) {
+    	    $config = json_decode(file_get_contents(self::$envpath));
+            return $config->database;
+	    }
+	}
+
 	protected function populateCommonParams(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
 	{
 		$this->driver = $input->getOption('driver');
 		$this->host = trim($input->getOption('host'));
-		$this->user = $input->getOption('user');
-		$this->pass = $input->getOption('pass');
+		$this->user = trim($input->getOption('user'));
+		$this->pass = trim($input->getOption('pass'));
 		$this->db = $input->getOption('db');
 		$dsn = $input->getOption('dsn');
+
+		$dbconfig = $this->_getEnvironmentConfig();
+		if ($dbconfig) {
+			$this->host = $this->host ?: $dbconfig->hostname;
+			$this->user = $this->user ?: $dbconfig->username;
+			$this->pass = $this->pass ?: $dbconfig->password;
+			$this->db   = $this->db   ?: $dbconfig->database;
+		}
+
 		if ($dsn){
 			$dsnComponents = DsnUtil::parseDSN($dsn);
 			$this->driver = $dsnComponents['phptype'];
@@ -156,3 +177,4 @@ abstract class AbstractSftw extends Console\Command\Command
 		$output->writeln(sprintf('Current schema version: %s', $version));
 	}	
 }
+
