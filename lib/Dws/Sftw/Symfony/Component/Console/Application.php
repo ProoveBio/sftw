@@ -19,5 +19,6 @@ class Application extends BaseApplication
 		$this->add(new Command\Latest());
 		$this->add(new Command\Migrate());
 		$this->add(new Command\PointTo());
+		$this->add(new Command\Create());
     }
 }
