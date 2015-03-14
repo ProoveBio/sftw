@@ -11,7 +11,7 @@ class {{classname}} extends SchemaChange
 	public function up()
 	{
 		$sql = <<< EOT
----- Write your migration SQL here
+-- Write your migration SQL here
 EOT;
 		$this->querySQL($sql);	
 	}
@@ -19,7 +19,7 @@ EOT;
 	public function down()
 	{
 		$sql = <<< EOT
----- Write your migration SQL here
+-- Write your migration SQL here
 EOT;
 		$this->querySQL($sql);
 	}

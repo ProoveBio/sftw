@@ -79,7 +79,6 @@ class Create extends AbstractSftw
 	 * 
 	 */
 	private function _getCurrentDateTimeInUTC() {
-	    date_default_timezone_set('America/Los_Angeles');
 	    $date = new \DateTime();
 	    $date->setTimezone(new \DateTimeZone('UTC'));
 	    return $date->format('YmdHis');
