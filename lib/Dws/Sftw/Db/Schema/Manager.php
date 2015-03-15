@@ -169,7 +169,19 @@ CREATE_SQL;
 		return $this->pdo->prepare(
             'SELECT `version` FROM `' . $schemaVersionTableName . '` ORDER BY `version` DESC LIMIT 1');
 	}
-	
+
+	/**
+	 * Utility function to generate a prepared PDoStatement to query for the recent versions
+	 * 
+	 * @param Interger $number
+	 * @return PDOStatement
+	 */
+	protected function getPreparedSqlSelectStatementForRecentVersions($number) {
+	    $schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
+	    return $this->pdo->prepare(
+	            'SELECT `version` FROM `' . $schemaVersionTableName . '` ORDER BY `version` DESC LIMIT ' . $number);
+	}
+
 	/**
 	 * Get the current schema version
 	 * 
@@ -181,6 +193,21 @@ CREATE_SQL;
 		$select->execute();
 		$result = $select->fetchObject();
 		return $result ? $result->version : 0;
+	}
+
+	/**
+	 * Get recent <number> of schema versions
+	 * 
+	 * @param Integer $number
+	 * @return Generator
+	 */
+	public function getRecentSchemaVersions($number = 1)
+	{
+		$select = $this->getPreparedSqlSelectStatementForRecentVersions($number);
+		$select->execute();
+		while ($result = $select->fetchObject()) {
+    		yield $result;
+		}
 	}
 
 	/**
