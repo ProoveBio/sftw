@@ -174,7 +174,7 @@ abstract class AbstractSftw extends Console\Command\Command
 		$version = $this->manager->getCurrentSchemaVersion();
 
 		// @see Dws\Sftw\Db\Schema\SchemaManager::_processMigrations() for nice spacing
-		$output->writeln(sprintf('Current schema version: %s', $version));
+		$output->writeln(sprintf('Latest schema version: %s', $version));
 	}	
 
 	protected function displayRecentSchemaVersions($number, Console\Output\OutputInterface $output)
@@ -182,7 +182,7 @@ abstract class AbstractSftw extends Console\Command\Command
 		$versions = $this->manager->getRecentSchemaVersions($number);
 
 		foreach ($versions as $version) {
-		    $output->writeln(sprintf('Recent version: %s                  %s', $version->version, $version->deployed_at));
+		    $output->writeln(sprintf('Recent version: %s    %s    %s', $version->version, $version->deployed_at, $version->migration_filename));
 		}
 	}	
 }

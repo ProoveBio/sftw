@@ -179,7 +179,7 @@ CREATE_SQL;
 	protected function getPreparedSqlSelectStatementForRecentVersions($number) {
 	    $schemaVersionTableName = $this->getPrefixedSchemaVersionTableName();
 	    return $this->pdo->prepare(
-	            'SELECT `version` FROM `' . $schemaVersionTableName . '` ORDER BY `version` DESC LIMIT ' . $number);
+	            'SELECT * FROM `' . $schemaVersionTableName . '` ORDER BY `version` DESC LIMIT ' . $number);
 	}
 
 	/**
