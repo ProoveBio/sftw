@@ -14,10 +14,10 @@ class Recent extends AbstractSftw
     public function __construct()
     {
 		parent::__construct('recent');
-		$this->setDescription('Displays recent schema versions');
-		$this->setHelp('Displays recent schema versions');
+		$this->setDescription('Displays recent schema versions (Default: 5)');
+		$this->setHelp('Displays recent schema versions. If command argument is omitted, display the most recent 5 migrations');
 
-		$this->addArgument('target', Console\Input\InputArgument::OPTIONAL, 'Number of most recent migrations', 1);
+		$this->addArgument('target', Console\Input\InputArgument::OPTIONAL, 'Number of most recent migrations', 5);
     }
 	
 	public function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
