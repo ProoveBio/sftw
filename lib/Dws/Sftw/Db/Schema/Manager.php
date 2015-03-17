@@ -196,6 +196,22 @@ CREATE_SQL;
 	}
 
 	/**
+	 * Get all of the migrations versions that have been run
+	 * 
+	 * @return array
+	 */
+	public function getCurrentSchemaVersions()
+	{
+		$versions = array();
+		$result = $this->pdo->query('SELECT version FROM '.$this->getPrefixedSchemaVersionTableName());
+		while ($row = $result->fetchObject()){
+			$versions[] = $row->version;
+		}
+
+		return $versions;
+	}
+
+	/**
 	 * Get recent <number> of schema versions
 	 * 
 	 * @param Integer $number
@@ -222,13 +238,16 @@ CREATE_SQL;
 			$version = PHP_INT_MAX;
 		}
 		$version = (int) $version;
-		$currentVersion = $this->getCurrentSchemaVersion();
-		$this->writeln(sprintf('Current schema version: %s', $currentVersion));
-		if ($currentVersion == $version) {
-			return self::RESULT_AT_CURRENT_VERSION;
+		$currentVersions = $this->getCurrentSchemaVersions();
+		$latestVersion = max($currentVersions);
+		$this->writeln(sprintf('Latest schema version: %s', $latestVersion));
+
+		$direction = 'up';
+		if ($latestVersion > $version) {
+			$direction = 'down';
 		}
 
-		$migrations = $this->_getMigrationFiles($currentVersion, $version);
+		$migrations = $this->_getMigrationFiles($currentVersions, $version, $direction);
 		if (empty($migrations)) {
 			if ($version == PHP_INT_MAX) {
 				return self::RESULT_AT_CURRENT_VERSION;
@@ -236,10 +255,6 @@ CREATE_SQL;
 			return self::RESULT_NO_MIGRATIONS_FOUND;
 		}
 
-		$direction = 'up';
-		if ($currentVersion > $version) {
-			$direction = 'down';
-		}
 		$this->_performMigrations($direction, $migrations);
 		return self::RESULT_OK;
 	}
@@ -269,19 +284,10 @@ CREATE_SQL;
 	 * @param string $dir
 	 * @return array an array containing migration-file data to use in applying the requested migrations
 	 */
-	protected function _getMigrationFiles($currentVersion, $stopVersion, $dir = null)
+	protected function _getMigrationFiles($currentVersions, $stopVersion, $direction = 'up', $dir = null)
 	{
 		if ($dir === null) {
 			$dir = $this->dir;
-		}
-
-		$direction = 'up';
-		$from = $currentVersion;
-		$to = $stopVersion;
-		if ($stopVersion < $currentVersion) {
-			$direction = 'down';
-			$from = $stopVersion;
-			$to = $currentVersion;
 		}
 
 		$files = array();
@@ -294,7 +300,8 @@ CREATE_SQL;
 			if (preg_match('/^([0-9]+).*\.php/i', $entry, $matches)) {
 				$versionNumber = (int) $matches[1];
 				$className = self::CLASS_PREFIX . $versionNumber;
-				if ($versionNumber > $from && $versionNumber <= $to) {
+				if ( ($direction == 'up' && !in_array($versionNumber,$currentVersions) && $versionNumber <= $stopVersion)
+					|| ($direction == 'down' && in_array($versionNumber,$currentVersions) && $versionNumber > $stopVersion) ) {
 					$path = $this->_relativePath($this->dir, $dir);
 					$files[$versionNumber] = array(
 						'path'        => $path,
@@ -307,7 +314,7 @@ CREATE_SQL;
 				if (is_dir($subdir) && is_readable($subdir)) {
 					$files = array_merge(
 							$files, $this->_getMigrationFiles(
-									$currentVersion, $stopVersion, $subdir
+									$currentVersions, $stopVersion, $direction, $subdir
 							)
 					);
 				}
