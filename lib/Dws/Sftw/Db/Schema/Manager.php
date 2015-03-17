@@ -239,7 +239,7 @@ CREATE_SQL;
 		}
 		$version = (int) $version;
 		$currentVersions = $this->getCurrentSchemaVersions();
-		$latestVersion = max($currentVersions);
+		$latestVersion = empty($currentVersions) ? 0 : max($currentVersions);
 		$this->writeln(sprintf('Latest schema version: %s', $latestVersion));
 
 		$direction = 'up';
