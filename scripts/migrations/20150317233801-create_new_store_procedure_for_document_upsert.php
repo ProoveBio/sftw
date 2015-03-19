@@ -8,6 +8,9 @@ use Dws\Sftw\Db\Schema\AbstractChange as SchemaChange;
 class MigrationClass_20150317233801 extends SchemaChange
 {
 
+	/**
+	 * For PDO to throw exception on multiple SQL statements, they have to be in separate call?
+	 */
 	public function up()
 	{
 		$sql = <<< EOT
@@ -16,8 +19,10 @@ class MigrationClass_20150317233801 extends SchemaChange
 -- ------------------------------------------
 
 DROP PROCEDURE IF EXISTS pr_Document_Upsert;
+EOT;
+		$this->querySQL($sql);
 
-DELIMITER ;;
+		$sql = <<< EOT
 CREATE PROCEDURE `pr_Document_Upsert`(
 	IN new_session VARCHAR(255),
 	INOUT new_document_id INT UNSIGNED,
@@ -71,8 +76,7 @@ this:BEGIN
 			SET MESSAGE_TEXT = 'Document ID given does not match any existing Document, cannot update.';
 	END;
 	END IF;
-END;;
-DELIMITER ;
+END
 EOT;
 		$this->querySQL($sql);	
 	}
