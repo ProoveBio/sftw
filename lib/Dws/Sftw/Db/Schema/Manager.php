@@ -260,6 +260,26 @@ CREATE_SQL;
 	}
 	
 	/**
+	 * Run a single migration of a specified version
+	 * 
+	 * @param int $version the targeted version
+	 * @param string|null $direction up or down
+	 * @return int One of the class constants RESULT_AT_CURRENT_VERSION, RESULT_NO_MIGRATIONS_FOUND, or RESULT_OK
+	 */
+	public function runSingle($version, $direction = 'up')
+	{
+		$version = (int) $version;
+
+		$migration = $this->_getMigrationFile($version);
+		if (empty($migration)) {
+			return self::RESULT_NO_MIGRATIONS_FOUND;
+		}
+
+		$this->_performMigrations($direction, $migration);
+		return self::RESULT_OK;
+	}
+
+	/**
 	 * 
 	 * @param string $direction
 	 * @param array $migrations
@@ -327,6 +347,49 @@ CREATE_SQL;
 		} else {
 			krsort($files);
 		}
+
+		return $files;
+	}
+
+	/**
+	 * 
+	 * @param string $dir
+	 * @return array an array containing single migration-file data to use in applying the requested migration
+	 */
+	protected function _getMigrationFile($version)
+	{
+		$dir = $this->dir;
+
+		$files = array();
+		if (!is_dir($dir) || !is_readable($dir)) {
+			return $files;
+		}
+
+		$d = dir($dir);
+		while (false !== ($entry = $d->read())) {
+			if (preg_match('/^([0-9]+).*\.php/i', $entry, $matches)) {
+				$versionNumber = (int) $matches[1];
+				if ($versionNumber == $version) {
+					$className = self::CLASS_PREFIX . $versionNumber;
+					$path = $this->_relativePath($this->dir, $dir);
+					$files[$versionNumber] = array(
+						'path'        => $path,
+						'filename'    => $entry,
+						'version'     => $versionNumber,
+						'classname'   => $className);
+				}
+			} elseif ($entry != '.' && $entry != '..') {
+				$subdir = $dir . '/' . $entry;
+				if (is_dir($subdir) && is_readable($subdir)) {
+					$files = array_merge(
+							$files, $this->_getMigrationFiles(
+									$currentVersions, $stopVersion, $direction, $subdir
+							)
+					);
+				}
+			}
+		}
+		$d->close();
 
 		return $files;
 	}
