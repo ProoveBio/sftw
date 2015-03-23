@@ -22,7 +22,6 @@ VALUES
 	("Testing Agreement","TA"),
 	("Request for Authorization","RFA"),
 	("Medical Necessity Letter","MN"),
-	("Insurance Information","INS"),
 	("Informed Consent","IC"),
 	("Survey","SUR"),
 	("Patient Demographics","DEMO"),
