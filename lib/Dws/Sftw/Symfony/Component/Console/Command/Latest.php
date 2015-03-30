@@ -16,7 +16,6 @@ class Latest extends AbstractSftw
     public function __construct()
     {
 		parent::__construct('latest');
-		$this->addOption('deep-fry', 'y', Console\Input\InputOption::VALUE_NONE, 'Try to find all migrations that have not been applied even before current migration head');
 		$this->setDescription('Migrates the schema to the latest version');
 		$this->setHelp('Migrates the schema to the latest version');
     }
@@ -27,7 +26,7 @@ class Latest extends AbstractSftw
 		
 		// $this->displayCurrentSchemaVersion($output);
 		try {
-			$result = $this->manager->updateTo(null, $input->getOption('deep-fry'));
+			$result = $this->manager->updateTo();
 		} catch (MigrateException $e) {
 			$this->errors[] = $e->getMessage();
 			$this->outputErrorsAndExit($output, 1);

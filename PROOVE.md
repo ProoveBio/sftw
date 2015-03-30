@@ -75,12 +75,12 @@ Recent version: 20150313192649    2015-03-15 01:44:27    20150313192649-Test.php
 Latest & Migrate (Updated)
 --------------------------
 
-Introduced a new option '*--dry-run*' or '*-b*' to allow user to see what exact SQL statements going to run by the migrations.
+Introduced a new option '--dry-run' or '-b' to allow user to see what exact SQL statements going to run by the migrations.
 It will not change the database schema or records, instead show SQL statements that will run.
 
     $ ./sftw latest --dry-run
 
-Sample output:
+Output:
 ```
 Latest schema version: 20150317233801
 Target schema version:  20150316201958
@@ -93,23 +93,6 @@ Schema migrated to version 20150317233801
 
 ```
 
-'migrate' command also accepts '*--dry-run*' option, which will output similar message as above.
-
     $ ./sftw migrate --dry-run 20150314184138
 
-Also new option '*--deep-fry*' on '*-y*' is introduced to find all migrations that are not applied to the database from day one.
-This happens when we merge branches of migration scripts, the current head is already moved to certain point on timeline
-when certain migrations left behind the head. Using '--deep-fry' option will look for those migrations and apply them.
-
-    $ ./sftw latest --deep-fry
-
-Sample output:
-```
-Latest schema version: 0
-Target schema version:  20150323190813
-Direction:              up
-Processing file: ./scripts/migrations/20150316201959-document_type_data.php
-Processing file: ./scripts/migrations/20150323190813-Add_foreign_key_contraint_on_document_type_id.php
-Schema migrated to version 20150323190813
-```
-Notice the first line, the 'Latest schema version' is not the current head any more. Instead it is set to 0.
+'migrate' command also accepts '--dry-run' option, which will output similar message as above.

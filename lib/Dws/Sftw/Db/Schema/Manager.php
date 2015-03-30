@@ -238,10 +238,9 @@ CREATE_SQL;
 	 * Use the migrations to update the db to the specified schema version
 	 * 
 	 * @param int|null $version the targeted version
-	 * @param bool|false $deepFry whether find all not-applied migration even before current head
 	 * @return int One of the class constants RESULT_AT_CURRENT_VERSION, RESULT_NO_MIGRATIONS_FOUND, or RESULT_OK
 	 */
-	public function updateTo($version = null, $deepFry = false)
+	public function updateTo($version = null)
 	{
 		if (is_null($version)) {
 			$version = PHP_INT_MAX;
@@ -249,9 +248,6 @@ CREATE_SQL;
 		$version = (int) $version;
 		$currentVersions = $this->getCurrentSchemaVersions();
 		$latestVersion = empty($currentVersions) ? 0 : max($currentVersions);
-		if ($deepFry) {
-			$latestVersion = 0;
-		}
 		$this->writeln(sprintf('Latest schema version: %s', $latestVersion));
 
 		$direction = 'up';
