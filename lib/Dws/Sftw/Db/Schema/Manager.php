@@ -356,9 +356,11 @@ CREATE_SQL;
 	 * @param string $dir
 	 * @return array an array containing single migration-file data to use in applying the requested migration
 	 */
-	protected function _getMigrationFile($version)
+	protected function _getMigrationFile($version, $dir = NULL)
 	{
-		$dir = $this->dir;
+		if ($dir === NULL)
+			$dir = $this->dir;
+		}
 
 		$files = array();
 		if (!is_dir($dir) || !is_readable($dir)) {
@@ -382,8 +384,8 @@ CREATE_SQL;
 				$subdir = $dir . '/' . $entry;
 				if (is_dir($subdir) && is_readable($subdir)) {
 					$files = array_merge(
-							$files, $this->_getMigrationFiles(
-									$currentVersions, $stopVersion, $direction, $subdir
+							$files, $this->_getMigrationFile(
+									$version, $subdir
 							)
 					);
 				}
