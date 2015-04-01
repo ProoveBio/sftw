@@ -366,7 +366,7 @@ CREATE_SQL;
 	 */
 	protected function _getMigrationFile($version, $dir = NULL)
 	{
-		if ($dir === NULL)
+		if ($dir === NULL) {
 			$dir = $this->dir;
 		}
 
