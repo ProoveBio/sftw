@@ -54,6 +54,13 @@ class Manager
 	protected $output;
 
 	/**
+	 * Whether cuurent execution should acually apply changes to database, or not
+	 * 
+	 * @var Boolean
+	 */
+	protected $dryRun;
+
+	/**
 	 * Constructor
 	 * 
 	 * Alternatively accepts an array of options as the third parameter
@@ -71,6 +78,7 @@ class Manager
 		$this->namespace = array_key_exists('namespace', $options) ? str_replace('/', '\\', $options['namespace']) : '';
 		$this->tablePrefix = array_key_exists('tablePrefix', $options) ? $options['tablePrefix'] : '';
 		$this->output = array_key_exists('output', $options) ? $options['output'] : new ConsoleOutput();
+		$this->dryRun = array_key_exists('dry-run', $options) ? $options['dry-run'] : false;
 
 		$this->checkMigrationDirectory();
 		$this->ensureSchemaVersionTableExists();
@@ -356,9 +364,11 @@ CREATE_SQL;
 	 * @param string $dir
 	 * @return array an array containing single migration-file data to use in applying the requested migration
 	 */
-	protected function _getMigrationFile($version)
+	protected function _getMigrationFile($version, $dir = NULL)
 	{
-		$dir = $this->dir;
+		if ($dir === NULL)
+			$dir = $this->dir;
+		}
 
 		$files = array();
 		if (!is_dir($dir) || !is_readable($dir)) {
@@ -382,8 +392,8 @@ CREATE_SQL;
 				$subdir = $dir . '/' . $entry;
 				if (is_dir($subdir) && is_readable($subdir)) {
 					$files = array_merge(
-							$files, $this->_getMigrationFiles(
-									$currentVersions, $stopVersion, $direction, $subdir
+							$files, $this->_getMigrationFile(
+									$version, $subdir
 							)
 					);
 				}
@@ -427,10 +437,14 @@ CREATE_SQL;
 		if (!class_exists($classname, false)) {
 			throw new \Exception("Could not find class '$classname' in file '$filename'");
 		}
-		$class = new $classname($this->pdo, $this->tablePrefix);
-		$class->$direction();
+		$class = new $classname($this->pdo, $this->tablePrefix, $this->output, $this->dryRun);
+		$result = $class->$direction();
 
-		$this->_updateSchemaVersion($migration, $direction);
+		if ($this->dryRun) {
+			$this->write($result, true);
+		} else {
+			$this->_updateSchemaVersion($migration, $direction);
+		}
 	}
 
 	/**
