@@ -21,5 +21,7 @@ class Application extends BaseApplication
 		$this->add(new Command\PointTo());
 		$this->add(new Command\Create());
 		$this->add(new Command\Recent());
+		$this->add(new Command\Run());
+		$this->add(new Command\Revert());
     }
 }

@@ -54,6 +54,13 @@ class Manager
 	protected $output;
 
 	/**
+	 * Whether cuurent execution should acually apply changes to database, or not
+	 * 
+	 * @var Boolean
+	 */
+	protected $dryRun;
+
+	/**
 	 * Constructor
 	 * 
 	 * Alternatively accepts an array of options as the third parameter
@@ -71,6 +78,7 @@ class Manager
 		$this->namespace = array_key_exists('namespace', $options) ? str_replace('/', '\\', $options['namespace']) : '';
 		$this->tablePrefix = array_key_exists('tablePrefix', $options) ? $options['tablePrefix'] : '';
 		$this->output = array_key_exists('output', $options) ? $options['output'] : new ConsoleOutput();
+		$this->dryRun = array_key_exists('dry-run', $options) ? $options['dry-run'] : false;
 
 		$this->checkMigrationDirectory();
 		$this->ensureSchemaVersionTableExists();
@@ -260,6 +268,26 @@ CREATE_SQL;
 	}
 	
 	/**
+	 * Run a single migration of a specified version
+	 * 
+	 * @param int $version the targeted version
+	 * @param string|null $direction up or down
+	 * @return int One of the class constants RESULT_AT_CURRENT_VERSION, RESULT_NO_MIGRATIONS_FOUND, or RESULT_OK
+	 */
+	public function runSingle($version, $direction = 'up')
+	{
+		$version = (int) $version;
+
+		$migration = $this->_getMigrationFile($version);
+		if (empty($migration)) {
+			return self::RESULT_NO_MIGRATIONS_FOUND;
+		}
+
+		$this->_performMigrations($direction, $migration);
+		return self::RESULT_OK;
+	}
+
+	/**
 	 * 
 	 * @param string $direction
 	 * @param array $migrations
@@ -331,6 +359,51 @@ CREATE_SQL;
 		return $files;
 	}
 
+	/**
+	 * 
+	 * @param string $dir
+	 * @return array an array containing single migration-file data to use in applying the requested migration
+	 */
+	protected function _getMigrationFile($version, $dir = NULL)
+	{
+		if ($dir === NULL) {
+			$dir = $this->dir;
+		}
+
+		$files = array();
+		if (!is_dir($dir) || !is_readable($dir)) {
+			return $files;
+		}
+
+		$d = dir($dir);
+		while (false !== ($entry = $d->read())) {
+			if (preg_match('/^([0-9]+).*\.php/i', $entry, $matches)) {
+				$versionNumber = (int) $matches[1];
+				if ($versionNumber == $version) {
+					$className = self::CLASS_PREFIX . $versionNumber;
+					$path = $this->_relativePath($this->dir, $dir);
+					$files[$versionNumber] = array(
+						'path'        => $path,
+						'filename'    => $entry,
+						'version'     => $versionNumber,
+						'classname'   => $className);
+				}
+			} elseif ($entry != '.' && $entry != '..') {
+				$subdir = $dir . '/' . $entry;
+				if (is_dir($subdir) && is_readable($subdir)) {
+					$files = array_merge(
+							$files, $this->_getMigrationFile(
+									$version, $subdir
+							)
+					);
+				}
+			}
+		}
+		$d->close();
+
+		return $files;
+	}
+
 	protected static function getTargetVersionFromMigrationList($list, $direction)
 	{
 		$lastRecord = end($list);
@@ -364,10 +437,14 @@ CREATE_SQL;
 		if (!class_exists($classname, false)) {
 			throw new \Exception("Could not find class '$classname' in file '$filename'");
 		}
-		$class = new $classname($this->pdo, $this->tablePrefix);
-		$class->$direction();
+		$class = new $classname($this->pdo, $this->tablePrefix, $this->output, $this->dryRun);
+		$result = $class->$direction();
 
-		$this->_updateSchemaVersion($migration, $direction);
+		if ($this->dryRun) {
+			$this->write($result, true);
+		} else {
+			$this->_updateSchemaVersion($migration, $direction);
+		}
 	}
 
 	/**

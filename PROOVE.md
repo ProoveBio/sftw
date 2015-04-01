@@ -71,3 +71,28 @@ Recent version: 20150314185002    2015-03-15 03:32:29    20150314185002-add_new_
 Recent version: 20150314184138    2015-03-15 03:32:29    20150314184138-Migration_Test_1.php
 Recent version: 20150313192649    2015-03-15 01:44:27    20150313192649-Test.php
 ```
+
+Latest & Migrate (Updated)
+--------------------------
+
+Introduced a new option '--dry-run' or '-b' to allow user to see what exact SQL statements going to run by the migrations.
+It will not change the database schema or records, instead show SQL statements that will run.
+
+    $ ./sftw latest --dry-run
+
+Output:
+```
+Latest schema version: 20150317233801
+Target schema version:  20150316201958
+Direction:              down
+Processing file: ./scripts/migrations/20150317233801-create_new_store_procedure_for_document_upsert.php
+-- -----------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS pr_Document_Upsert;
+-- -----------------------------------------------------------------------------
+Schema migrated to version 20150317233801
+
+```
+
+    $ ./sftw migrate --dry-run 20150314184138
+
+'migrate' command also accepts '--dry-run' option, which will output similar message as above.

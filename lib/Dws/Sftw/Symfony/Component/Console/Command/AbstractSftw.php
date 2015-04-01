@@ -62,6 +62,7 @@ abstract class AbstractSftw extends Console\Command\Command
         $this->addOption('namespace', 'm', Console\Input\InputOption::VALUE_REQUIRED, 'Namespace for the migration classes (forward slashes ok, will be transformed)');
         $this->addOption('path', 'f', Console\Input\InputOption::VALUE_REQUIRED, 'Path for migration files. Default: ./scripts/migrations', './scripts/migrations');
         $this->addOption('driver', 'r', Console\Input\InputOption::VALUE_REQUIRED, 'DB driver. Default: mysql', 'mysql');
+        $this->addOption('dry-run', 'b', Console\Input\InputOption::VALUE_NONE, 'Pseudo running, no actual change on database, output SQL instead');
 	}
 	
 	protected function outputErrorsAndExit(Console\Output\OutputInterface $output, $code = 1)
@@ -103,6 +104,7 @@ abstract class AbstractSftw extends Console\Command\Command
 		$manager = new SchemaManager($pdo, $this->path, array(
 			'namespace' => $this->namespace,
 			'output'	=> $output,
+			'dry-run'   => $input->getOption('dry-run'),
 		));
 		return $manager;
 	}
