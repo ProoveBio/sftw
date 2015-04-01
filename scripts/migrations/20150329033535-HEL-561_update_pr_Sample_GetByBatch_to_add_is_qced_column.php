@@ -13,7 +13,7 @@ class MigrationClass_20150329033535 extends SchemaChange
 		$sql = <<< EOT
 DROP PROCEDURE IF EXISTS pr_Sample_GetByBatch;
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `pr_Sample_GetByBatch`(
+CREATE PROCEDURE `pr_Sample_GetByBatch`(
 	IN new_session VARCHAR(255),
 	IN s_batch_id  INT UNSIGNED
 )
