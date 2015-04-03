@@ -22,9 +22,14 @@ EOT;
 ALTER TABLE tblSample
 	MODIFY encounter_id INT(11) UNSIGNED DEFAULT NULL;
 EOT;
+		$sql3 = <<< EOT
+ALTER TABLE tblSampleHistory
+	MODIFY encounter_id INT(11) UNSIGNED DEFAULT NULL;
+EOT;
 
 		$this->querySQL($sql1);	
 		$this->querySQL($sql2);	
+		$this->querySQL($sql3);	
 	}
 
 	public function down()
@@ -40,9 +45,15 @@ EOT;
 ALTER TABLE tblSample
 	MODIFY encounter_id INT(11) UNSIGNED NOT NULL;
 EOT;
+		$sql4 = <<< EOT
+ALTER TABLE tblSample
+	MODIFY encounter_id INT(11) UNSIGNED NOT NULL;
+EOT;
+
 		$this->querySQL($sql1);
 		$this->querySQL($sql2);
 		$this->querySQL($sql3);
+		$this->querySQL($sql4);
 	}
 
 }
