@@ -278,6 +278,18 @@ CREATE_SQL;
 	{
 		$version = (int) $version;
 
+		$currentVersions = $this->getCurrentSchemaVersions();
+
+		if ($direction == 'up' && in_array($version,$currentVersions)){
+			echo "The specified migration has already been run and can't be run again\n";
+			exit(0);
+		}
+
+		if ($direction == 'down' && !in_array($version,$currentVersions)){
+			echo "The specified migration has not been run and therefore can't be reverted\n";
+			exit(0);
+		}
+
 		$migration = $this->_getMigrationFile($version);
 		if (empty($migration)) {
 			return self::RESULT_NO_MIGRATIONS_FOUND;
