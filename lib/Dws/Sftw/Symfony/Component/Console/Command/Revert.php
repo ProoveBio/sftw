@@ -27,12 +27,6 @@ class Revert extends AbstractSftw
 						
 		$target = $input->getArgument('target');
 
-		$currentVersions = $this->manager->getCurrentSchemaVersions();
-		if (!in_array($target,$currentVersions)){
-			echo "The specified migration has not been run and therefore can't be reverted\n";
-			exit(0);
-		}
-
 		try {
 			$result = $this->manager->runSingle($target,'down');		
 		} catch (MigrateException $e) {

@@ -16,9 +16,10 @@ class Run extends AbstractSftw
     {
 		parent::__construct('run');
 		$this->setDescription('Runs single migration of the specified version');
-		$this->setHelp('Run single migration the specified version');
+		$this->setHelp('Run single migration of the specified version');
 		
 		$this->addArgument('target', Console\Input\InputArgument::REQUIRED, 'The desired schema version');
+        $this->addOption('down', 'g', Console\Input\InputOption::VALUE_NONE, 'Run down instead of up');
     }
 	
 	public function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
@@ -27,14 +28,13 @@ class Run extends AbstractSftw
 						
 		$target = $input->getArgument('target');
 
-		$currentVersions = $this->manager->getCurrentSchemaVersions();
-		if (in_array($target,$currentVersions)){
-			echo "The specified migration has already been run and can't be run again\n";
-			exit(0);
+		$direction = 'up';
+		if ($input->getOption('down')){
+			$direction = 'down';
 		}
 
 		try {
-			$result = $this->manager->runSingle($target);		
+			$result = $this->manager->runSingle($target,$direction);		
 		} catch (MigrateException $e) {
 			$this->errors[] = $e->getMessage();
 			$this->outputErrorsAndExit($output, 1);
