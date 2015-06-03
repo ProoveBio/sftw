@@ -125,8 +125,8 @@ this:BEGIN
 		FROM
 			tblSample S
                         INNER JOIN tblSampleStatus SS ON SS.sample_status_id = S.sample_status_id
-			INNER JOIN tblUser U ON U.user_id = E.created_by
 			INNER JOIN tblEncounter E ON S.encounter_id = E.encounter_id AND E.is_deleted = 0
+			INNER JOIN tblUser U ON U.user_id = E.created_by
 			INNER JOIN tblAccount A ON A.account_id = E.account_id AND A.is_deleted = 0
 			INNER JOIN tblContact A_C ON A.contact_id = A_C.contact_id AND A_C.is_deleted = 0
       			INNER JOIN tblPatient P ON P.patient_id = E.patient_id AND P.is_deleted = 0
