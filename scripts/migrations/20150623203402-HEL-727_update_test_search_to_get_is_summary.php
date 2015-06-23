@@ -26,6 +26,7 @@ CREATE PROCEDURE `pr_Test_Search`(
 	IN s_is_repeat BOOLEAN,
 	IN s_is_reswab BOOLEAN,
 	IN s_is_nether_repeat_nor_reswab BOOLEAN,
+	IN s_hide_summary BOOLEAN,
 	IN s_claim_num VARCHAR(255),
 	IN s_is_preintake_needed BOOLEAN,
 	IN s_csr_lastname VARCHAR(255),
@@ -235,6 +236,12 @@ this:BEGIN
 			S.is_reswab_needed = 0
 			AND
 			S.is_repeat_needed = 0");
+	END IF;
+
+	IF (s_hide_summary IS NOT NULL AND s_hide_summary > 0) THEN
+		SET @query_sql := CONCAT(@query_sql,"
+			AND
+			TT.is_summary = 0");
 	END IF;
 
 	
