@@ -10,7 +10,7 @@ class MigrationClass_20150708000646 extends SchemaChange
 
 	public function up()
 	{
-        $patient_id = "2X13514413";
+        $patient_id = "P20001923";
 
         $sql = <<< EOT
 SELECT E.encounter_id, S.sample_id, P.patient_id, group_concat(C.contact_id) AS contact_ids
