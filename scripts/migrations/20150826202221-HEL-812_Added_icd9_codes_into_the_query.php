@@ -119,7 +119,7 @@ this:BEGIN
             PT.payer_type_name
 
 			, (
-				SELECT GROUP_CONCAT(ICD9.icd9 ORDER BY ICD9.icd9)
+				SELECT GROUP_CONCAT(ICD9.icd9 ORDER BY ICD9.icd9 SEPARATOR ', ')
 					FROM tblICD9 ICD9 
 					WHERE ICD9.encounter_id = E.encounter_id AND ICD9.is_deleted = 0
             ) AS icd9s
