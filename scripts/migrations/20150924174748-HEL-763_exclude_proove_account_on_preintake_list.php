@@ -197,7 +197,7 @@ this:BEGIN
 	IF (s_is_preintake_needed IS NOT NULL) THEN
 	SET @query_sql := CONCAT(@query_sql,"
 		AND
-		S.is_preintake_needed = ", s_is_preintake_needed, " AND A.account_id != 17"); -- Exclude Proove account
+		S.is_preintake_needed = ", s_is_preintake_needed, " AND A.account_id NOT IN (17,364)"); -- Exclude Proove accounts
 	END IF;
 
 	SET @query_sql := CONCAT(@query_sql,"
