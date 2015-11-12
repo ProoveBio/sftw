@@ -265,7 +265,7 @@ this:BEGIN
     IF (s_timezone_shift IS NOT NULL AND s_timezone_shift > 0) THEN
         SET @query_sql := CONCAT(@query_sql,"
             AND
-            T.report_pdf_created_at < CONVERT_TZ(NOW(),'+00:00','-08:00')");
+            CAST(T.report_pdf_created_at AS DATE) <= CAST(CONVERT_TZ(NOW(),'+00:00','-08:00') AS DATE)");
     END IF;
 
     
