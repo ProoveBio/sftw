@@ -13,7 +13,7 @@ class MigrationClass_20151210190837 extends SchemaChange
 		$sql = <<< EOT
 DROP PROCEDURE IF EXISTS pr_Billing_GetPatientDownload;
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `pr_Billing_GetPatientDownload`(
+CREATE PROCEDURE `pr_Billing_GetPatientDownload`(
 	IN new_session VARCHAR(255),
 	IN new_billing_download_id  INT UNSIGNED,
 	IN new_payer_type VARCHAR(255),
