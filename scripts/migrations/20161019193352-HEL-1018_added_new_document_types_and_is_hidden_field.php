@@ -23,7 +23,7 @@ VALUES
 ('104', 'PAT.SIG', 'Patient Signature', '1'),
 ('105', 'PAT.INIT', 'Patient Initial', '1'),
 ('106', 'PHY.SIG', 'Physician Signature', '1'),
-('107', 'PHY.INIT', 'Physician Signature', '1'),
+('107', 'PHY.INIT', 'Physician Initial', '1'),
 ('108', 'PAT.HIS', 'Patient History', '1');
 EOT;
 		$this->querySQL($sql);	
