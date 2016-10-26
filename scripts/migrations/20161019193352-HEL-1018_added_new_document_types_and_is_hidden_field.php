@@ -24,7 +24,9 @@ VALUES
 ('105', 'PAT.INIT', 'Patient Initial', '1'),
 ('106', 'PHY.SIG', 'Physician Signature', '1'),
 ('107', 'PHY.INIT', 'Physician Initial', '1'),
-('108', 'PAT.HIS', 'Patient History', '1');
+('108', 'PAT.HIS', 'Patient History', '1'),
+('109', 'WIT.SIG', 'Witness Signature', '1'),
+('110', 'WIT.INIT', 'Witness Initial', '1');
 EOT;
 		$this->querySQL($sql);	
 	}
@@ -36,7 +38,7 @@ ALTER TABLE `tblDocumentType`
   DROP `is_hidden`;
 
 DELETE FROM `tblDocumentType` 
-    WHERE `tblDocumentType`.`document_type_id` IN (101,102,103,104,105,106,107,108);
+    WHERE `tblDocumentType`.`document_type_id` IN (101,102,103,104,105,106,107,108,109,110);
 EOT;
 		$this->querySQL($sql);
 	}
