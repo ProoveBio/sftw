@@ -299,8 +299,6 @@ this:BEGIN
 END
 EOT;
 
-
-EOT;
 		$this->querySQL($sql);	
 	}
 
