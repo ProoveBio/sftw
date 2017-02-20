@@ -119,16 +119,20 @@ this:BEGIN
                 SELECT GROUP_CONCAT(CASE WHEN P.race_bit & R.race_bit > 0 THEN R.race_abbreviation ELSE NULL END) FROM tblRace R
             ) AS race_abbreviation,
             PT.payer_type_id,
-            PT.payer_type_name
+            PT.payer_type_name,
 
-            , (
+            (
                 SELECT GROUP_CONCAT(ICD9.icd9 ORDER BY ICD9.icd9 SEPARATOR ', ')
                     FROM tblICD9 ICD9 
                     WHERE ICD9.encounter_id = E.encounter_id AND ICD9.is_deleted = 0
             ) AS icd9s,
+            (
+                 SELECT SIG.document_id FROM tblDocument SIG 
+                 WHERE T.test_id = SIG.test_id AND SIG.document_type_id = 106 AND SIG.is_deleted = 0
+                     ORDER BY SIG.document_type_id DESC LIMIT 1
+             ) AS physician_sig_id,
             E.original_source AS visit_source,
-            P.original_source AS patient_source,
-            SIG.document_id AS physician_sig_id
+            P.original_source AS patient_source
             FROM tblEncounter E
             INNER JOIN (
                 SELECT encounter_id FROM tblEncounter E2 WHERE E2.is_deleted = 0 ORDER BY E2.created_datetime DESC
@@ -152,7 +156,6 @@ this:BEGIN
             LEFT JOIN tblPayer PY ON EP.payer_id = PY.payer_id AND PY.is_deleted = 0
             LEFT JOIN tblPayerCompany PC ON PC.payer_company_id = PY.payer_company_id
             LEFT JOIN tblPayerType PT ON PT.payer_type_id = PC.payer_type_id
-            LEFT JOIN tblDocument SIG ON T.test_id = SIG.test_id AND SIG.document_type_id = 106 AND SIG.is_deleted = 0
 
     "); 
 
